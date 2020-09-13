@@ -1,0 +1,16 @@
+#bookingRequest {
+    background-color: #FF5E28;
+    border:  2px solid #FF5E28;
+    color: #ffffff;
+    border-radius: 25px;
+}
+
+.addPassenger {
+    border:  2px solid #FF5E28 !important;
+    color: #FF5E28 !important;
+    border-radius: 25px !important;
+  }
+
+.addIcon {
+    font-size: 24px;
+}
