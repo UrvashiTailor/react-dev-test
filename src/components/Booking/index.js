@@ -188,24 +188,20 @@ class Booking extends React.Component {
         const {startDate, passengerArray} = this.state;
         const dob = this.getDOBs();
         var splitSD = startDate.split("-");
-        var sd = splitSD[1] + "/" + splitSD[0] + "/" + splitSD[2];
-        console.log("sd", sd);
+        let monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        const monthName = parseInt(splitSD[1]);
+        var sd = monthNames[monthName] + "/" + splitSD[0] + "/" + splitSD[2];
+        
         var sdAsDate = new Date(sd);
-        console.log("sdAsDate", sdAsDate);
 
         const ages = passengerArray.map((passenger, i) => {
             let dobCurrent = dob[i];
             let splitDOB = dobCurrent.split("/");
             let dobFirst = splitDOB[1] + "/" + splitDOB[0] + "/" + splitDOB[2];
-            console.log("dobFirst", dobFirst); 
-            let dobAsDate = new Date(dobFirst);
-            console.log("sdAsDate", sdAsDate); 
-            console.log("dobAsDate", dobAsDate); 
+            let dobAsDate = new Date(dobFirst); 
             let diff_ms = sdAsDate.getTime() - dobAsDate.getTime();
-            console.log("diff_ms", diff_ms); 
 
             let age_dt = new Date(diff_ms);
-            console.log("age_dt", age_dt); 
             return Math.abs(age_dt.getUTCFullYear() - 1970);
         })
         return ages;
@@ -214,7 +210,12 @@ class Booking extends React.Component {
       getAddress = () => {
           const {streetAddress, city, county, postcode, country} = this.state.address;
           return streetAddress + city + county + postcode + country;
-      }
+    }
+
+    validateEmail = (email) => {
+        const re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        return re.test(email);
+    }
 
     getFormData = () => {
         const {email, phoneNumber, startDate, customisations, passengerArray} = this.state;
@@ -222,6 +223,12 @@ class Booking extends React.Component {
             alert("You have not filled in some details")
             return
         }
+
+        if (!this.validateEmail(email)) {
+            alert("The email you have entered is invalid");
+            return;
+        }
+
         var passengers = {
             firstNames: this.getpassengerDetails("fname"),
             lastNames:  this.getpassengerDetails("lname"),
