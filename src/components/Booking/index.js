@@ -64,10 +64,7 @@ class Booking extends React.Component {
 
     onPassengerDetailChange = (e, index, fieldName) => {
         let passengerArray = [].concat(this.state.passengerArray);
-        console.log("passengerArray", passengerArray);
-        console.log("passengerArray", index);
         passengerArray[index][fieldName] = e.target.value;
-        console.log("value", e.target.value)
         this.setState({
             passengerArray,
         })
@@ -172,10 +169,10 @@ class Booking extends React.Component {
         return data;
     }
 
-    getAges = () => { 
+    getAges = () => {
         const {startDate, passengerArray} = this.state;
         const dob = this.getDOBs();
-        var splitSD = startDate.split("/");
+        var splitSD = startDate.split("-");
         var sd = splitSD[1] + "/" + splitSD[0] + "/" + splitSD[2];
         var sdAsDate = new Date(sd);
 
@@ -192,12 +189,11 @@ class Booking extends React.Component {
       }
 
       getAddress = () => {
-          const {streetAddress, city, county, postcode, country} = this.state;
+          const {streetAddress, city, county, postcode, country} = this.state.address;
           return streetAddress + city + county + postcode + country;
       }
 
     getFormData = () => {
-        console.log("===>>", this.state)
         const {email, phoneNumber, startDate, customisations, passengerArray} = this.state;
         if(!startDate) {
             alert("You have not filled in some details")
@@ -239,7 +235,6 @@ class Booking extends React.Component {
         };
     
         localStorage.setItem("passengerDetails", JSON.stringify(details))
-        console.log(JSON.stringify(details));
       }
       
       writeLeadPassengerFile = (firstName, lastName, dob, gender, age, email, phoneNum, address, startDate, customisations) => {
@@ -258,7 +253,6 @@ class Booking extends React.Component {
       
         //var obj = JSON.parse(leadPassengerDetails);
         localStorage.setItem("leadPassenger", JSON.stringify(leadPassengerDetails))
-        console.log(JSON.stringify(leadPassengerDetails));
       }
 
     checkValidation = (passengers, noPassengers) => {
