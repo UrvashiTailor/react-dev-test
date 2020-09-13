@@ -25,6 +25,11 @@
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCPJpjD-qcR_yIxJnS8maR5W9KB0E3EzYI&callback=initAutocomplete&libraries=places&v=weekly"
+  defer
+></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"></script>
     <title>React App</title>
   </head>
   <body>
@@ -41,4 +46,18 @@
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
   </body>
+  <script>
+    function initAutocomplete() {
+    autocomplete = new google.maps.places.Autocomplete(
+      document.getElementById("address"),
+      {
+        types: ["geocode"]
+      }
+    );
+  
+    //autocomplete.setFields(["address_component"]);
+  
+    //autocomplete.addListener("place_changed", fillInAddress);
+  }
+  </script>
 </html>

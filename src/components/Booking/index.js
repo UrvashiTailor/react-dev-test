@@ -3,6 +3,17 @@ import { Col, Row, Form, FormGroup, Input, Label, Button } from 'reactstrap';
 import { dateNumber, month, year } from "../../common/const";
 import "./Booking.css";
 
+let autocomplete;
+let google = window.google;
+const componentForm = {
+    street_number: "short_name",
+    route: "long_name",
+    locality: "long_name",
+    administrative_area_level_1: "short_name",
+    country: "long_name",
+    postal_code: "short_name",
+    postal_town: "long_name"
+  };
 class Booking extends React.Component {
     constructor(props) {
         super(props);
@@ -22,13 +33,17 @@ class Booking extends React.Component {
                 county: '',
                 postcode: '',
                 country: ''
-            }
+            },
+            packageName: 'Bali Package',
+            price: '150'
         }
         let yearArray = [].concat(year);
         for (let i=2020; i>=1990; i--) {
             yearArray.push(i);
         }
         this.state.year = yearArray;
+        
+        
     }
 
     onAddPaseenger = () => {
@@ -174,15 +189,23 @@ class Booking extends React.Component {
         const dob = this.getDOBs();
         var splitSD = startDate.split("-");
         var sd = splitSD[1] + "/" + splitSD[0] + "/" + splitSD[2];
+        console.log("sd", sd);
         var sdAsDate = new Date(sd);
+        console.log("sdAsDate", sdAsDate);
 
         const ages = passengerArray.map((passenger, i) => {
             let dobCurrent = dob[i];
             let splitDOB = dobCurrent.split("/");
             let dobFirst = splitDOB[1] + "/" + splitDOB[0] + "/" + splitDOB[2];
+            console.log("dobFirst", dobFirst); 
             let dobAsDate = new Date(dobFirst);
+            console.log("sdAsDate", sdAsDate); 
+            console.log("dobAsDate", dobAsDate); 
             let diff_ms = sdAsDate.getTime() - dobAsDate.getTime();
-            let age_dt = new Date(diff_ms); 
+            console.log("diff_ms", diff_ms); 
+
+            let age_dt = new Date(diff_ms);
+            console.log("age_dt", age_dt); 
             return Math.abs(age_dt.getUTCFullYear() - 1970);
         })
         return ages;
@@ -233,12 +256,23 @@ class Booking extends React.Component {
           "gender": gender,
           "ages": age
         };
+        const data = JSON.stringify(details);
+        let filename = 'passengerDetails.json';
     
-        localStorage.setItem("passengerDetails", JSON.stringify(details))
+        localStorage.setItem("passengerDetails", JSON.stringify(details));
+        let blob = new Blob([data], {type: 'text/json'}),
+            e = document.createEvent('MouseEvents'),
+            a = document.createElement('a');
+
+        a.download = filename
+        a.href = window.URL.createObjectURL(blob)
+        a.dataset.downloadurl = ['text/json', a.download, a.href].join(':')
+        e.initMouseEvent('click', true, false, window, 0 , 0, 0,0,0, false, false, false, false, 0, null)
+        a.dispatchEvent(e);
       }
       
       writeLeadPassengerFile = (firstName, lastName, dob, gender, age, email, phoneNum, address, startDate, customisations) => {
-        var leadPassengerDetails = {
+        let leadPassengerDetails = {
           "firstName": firstName,
           "lastName": lastName,
           "dob": dob,
@@ -250,6 +284,19 @@ class Booking extends React.Component {
           "startDate": startDate,
           "customisations": customisations
         };
+
+        const data = JSON.stringify(leadPassengerDetails);
+        let filename = 'leadPassengerDetails.json';
+
+        let blob = new Blob([data], {type: 'text/json'}),
+            e = document.createEvent('MouseEvents'),
+            a = document.createElement('a');
+
+        a.download = filename
+        a.href = window.URL.createObjectURL(blob)
+        a.dataset.downloadurl = ['text/json', a.download, a.href].join(':')
+        e.initMouseEvent('click', true, false, window, 0 , 0, 0,0,0, false, false, false, false, 0, null)
+        a.dispatchEvent(e);
       
         //var obj = JSON.parse(leadPassengerDetails);
         localStorage.setItem("leadPassenger", JSON.stringify(leadPassengerDetails))
@@ -266,6 +313,39 @@ class Booking extends React.Component {
             }
           }
           return true;
+    }
+
+    geolocate = () => {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(position => {
+            const geolocation = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude
+            };
+            const circle = new google.maps.Circle({
+              center: geolocation,
+              radius: position.coords.accuracy
+            });
+            autocomplete.setBounds(circle.getBounds());
+          });
+        }
+    }
+
+    fillInAddress = () => {
+        const place = autocomplete.getPlace();
+
+        for (const component of place.address_components) {
+            const addressType = component.types[0];
+
+            if (componentForm[addressType]) {
+            const val = component[componentForm[addressType]];
+            document.getElementById(addressType).value = val;
+            }
+        }
+        var strNum = document.getElementById("street_number").value;
+        var routeVal = document.getElementById("route").value;
+        var newRouteVal = strNum.concat(" ", routeVal);
+        document.getElementById("route").value = newRouteVal;
     }
 
     render() {
@@ -295,24 +375,25 @@ class Booking extends React.Component {
                     <p><strong>Address</strong></p>
                     <Form>
                         <FormGroup>
-                            <Input type="text" name="address" id="address" placeholder="Enter your address"  />
+                            <Input type="text" name="address" id="address" placeholder="Enter your address" onFocus={this.geolocate}  />
                         </FormGroup>
                         <FormGroup>
-                            <Input type="text" name="streetAddress" id="streetAddress" placeholder="Street address"
+                            <input type="text" id="street_number" hidden="true"></input>
+                            <Input type="text" name="streetAddress" id="route" placeholder="Street address"
                             onChange={(e) => this.onAddressChange(e, 'streetAddress')} />
                         </FormGroup>
                         <FormGroup>
-                            <Input type="text" name="city" id="city" placeholder="City or Town"
+                            <Input type="text" name="city" id="postal_town" placeholder="City or Town"
                             onChange={(e) => this.onAddressChange(e, 'city')} />
                         </FormGroup>
                         <FormGroup>
                             <Row>
                                 <Col xs="6">
-                                    <Input type="text" name="county" id="county" placeholder="County"
+                                    <Input type="text" name="county" id="administrative_area_level_1" placeholder="County"
                                     onChange={(e) => this.onAddressChange(e, 'county')} />
                                 </Col>
                                 <Col xs="6">
-                                    <Input type="text" name="pCode" id="pCode" placeholder="Post code"
+                                    <Input type="text" name="pCode" id="postal_code" placeholder="Post code"
                                     onChange={(e) => this.onAddressChange(e, 'postCode')} />
                                 </Col>
                             </Row>     
@@ -341,7 +422,7 @@ class Booking extends React.Component {
             <Col md="6" className="container mr-5 pr-5">
                 <Col md="12" className="container">
                     <p>Booking</p>
-                    <h3 id="packageTitle"><strong></strong></h3>
+                    <h3 id="packageTitle"><strong>{this.state.packageName}</strong></h3>
                 </Col>
                 <Col md="12" className="container">
                     <p>Pick a <strong>start date</strong></p>
@@ -353,7 +434,7 @@ class Booking extends React.Component {
                     placeholder="Here you can request to change your adventure around. You could ask to drop some activities, extend the dates at a certain accomodation etc."/>           
                 </Col>
                 <Col md="6">
-                    <label for="bookingRequest">Approximate Price per Person: £ Too Much, </label>
+                    <label for="bookingRequest">Approximate Price per Person: {this.state.price} </label>
                     <Button className="btn btn-primary" id="bookingRequest" name="bookingRequest" onClick={this.getFormData} type="submit">
                         <div className="row mx-auto">
                         <i className="material-icons addIcon">work</i>
@@ -361,6 +442,17 @@ class Booking extends React.Component {
                 </Col>          
             </Col>
         </Row>
+      }
+
+      componentDidMount() {
+        const proxyurl = "https://cors-anywhere.herokuapp.com/";
+        const url = "https://maps.googleapis.com/maps/api/js?key=AIzaSyCPJpjD-qcR_yIxJnS8maR5W9KB0E3EzYI&callback=initAutocomplete&libraries=places&v=weekly"; // site that doesn’t send Access-Control-*
+        fetch(proxyurl + url) // https://cors-anywhere.herokuapp.com/https://example.com
+        .then(response => response.json())
+        .then(contents => {
+            autocomplete.addListener("place_changed", this.fillInAddress);
+            console.log(contents)})
+        .catch(() => console.log("Can’t access " + url + " response. Blocked by browser?"))
       }
 }
 
