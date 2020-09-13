@@ -1,5 +1,5 @@
 import React from 'react';
-import { Nav, NavItem, NavLink, Row, Col } from 'reactstrap';
+import { Nav, NavItem, NavLink, Col } from 'reactstrap';
 import "./Header.css";
 
 function Header() {
